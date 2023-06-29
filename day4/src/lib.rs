@@ -2,7 +2,6 @@ use std::str::{FromStr, Lines};
 
 use itertools::Itertools;
 
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 struct CleaningSection {
     start: usize,
     end: usize,
@@ -30,26 +29,41 @@ impl CleaningSection {
     }
 }
 
-macro_rules! get_cleaning_section_pair {
-    ($input:expr) => {
-        $input.map(|l| {
-            l.split_terminator(',')
-                .map(|s| s.parse::<CleaningSection>().expect("safe"))
-                .collect_tuple::<(_, _)>()
-                .expect("safe")
-        })
-    };
+struct CleaningPair(CleaningSection, CleaningSection);
+
+impl FromStr for CleaningPair {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.split_terminator(',')
+            .map(|s| s.parse::<CleaningSection>())
+            .try_collect::<_, Vec<CleaningSection>, _>()
+            .map(|v| v.into_iter().collect_tuple::<(_, _)>().expect("safe"))
+            .map(|(sec1, sec2)| CleaningPair(sec1, sec2))
+    }
+}
+
+impl CleaningPair {
+    fn is_contained(&self) -> bool {
+        self.0.contains(&self.1) || self.1.contains(&self.0)
+    }
+
+    fn is_overlapped(&self) -> bool {
+        self.0.overlap(&self.1) || self.1.overlap(&self.0)
+    }
 }
 
 pub fn solve_part1(input: Lines) -> usize {
-    get_cleaning_section_pair!(input)
-        .filter(|(sec1, sec2)| sec1.contains(&sec2) || sec2.contains(&sec1))
+    input
+        .map(|l| l.parse::<CleaningPair>().expect("safe"))
+        .filter(|pair| pair.is_contained())
         .count()
 }
 
 pub fn solve_part2(input: Lines) -> usize {
-    get_cleaning_section_pair!(input)
-        .filter(|(sec1, sec2)| sec1.overlap(&sec2) || sec2.overlap(&sec1))
+    input
+        .map(|l| l.parse::<CleaningPair>().expect("safe"))
+        .filter(|pair| pair.is_overlapped())
         .count()
 }
 
