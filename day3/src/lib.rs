@@ -1,5 +1,7 @@
 use std::{collections::HashSet, str::Lines};
 
+use itertools::Itertools;
+
 struct AlphabeticalChar(char);
 
 impl AlphabeticalChar {
@@ -52,6 +54,31 @@ pub fn solve_part1(input: Lines) -> usize {
         .sum()
 }
 
+pub fn solve_part2(input: Lines) -> usize {
+    input
+        .chunks(3)
+        .into_iter()
+        .map(|group| {
+            group
+                .map(|rucksack| HashSet::from_iter(rucksack.chars()))
+                .collect_tuple::<(_, _, _)>()
+                .expect("safe")
+        })
+        .map(|(items1, items2, items3)| {
+            *items1
+                .intersection(&items2)
+                .map(|c| *c)
+                .collect::<HashSet<_>>()
+                .intersection(&items3)
+                .next()
+                .expect("safe")
+        })
+        .map(|c| AlphabeticalChar::try_from(c).expect("safe"))
+        .map(Item::new)
+        .map(|i| i.priority())
+        .sum()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -74,5 +101,10 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
     #[test]
     fn test_part1() {
         assert_eq!(solve_part1(INPUT.lines()), 157);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(solve_part2(INPUT.lines()), 70);
     }
 }
