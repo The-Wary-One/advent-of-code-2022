@@ -320,13 +320,24 @@ pub fn solve_part1(mut input: &mut Lines) -> usize {
         .sum()
 }
 
+pub fn solve_part2(mut input: &mut Lines) -> usize {
+    let mut parser = CLIParser::new(&mut input);
+    let fs = parser.parse();
+    let space_to_free = 30000000 - (70000000 - fs.borrow().size());
+    DepthFirstIteratorFS::from(fs)
+        .into_iter()
+        .filter(|node| node.borrow().is_dir())
+        .map(|n| n.borrow().size())
+        .filter(|size| *size >= space_to_free)
+        .min()
+        .expect("safe")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_part1() {
-        let input = "$ cd /
+    const INPUT: &'static str = "$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -350,6 +361,13 @@ $ ls
 5626152 d.ext
 7214296 k";
 
-        assert_eq!(solve_part1(&mut input.lines()), 95437);
+    #[test]
+    fn test_part1() {
+        assert_eq!(solve_part1(&mut INPUT.lines()), 95437);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(solve_part2(&mut INPUT.lines()), 24933642);
     }
 }
