@@ -71,7 +71,7 @@ pub fn solve_part2(input: Lines) -> usize {
 mod tests {
     use super::*;
 
-    const INPUT: &'static str = "2-4,6-8
+    const INPUT: &str = "2-4,6-8
 2-3,4-5
 5-7,7-9
 2-8,3-7

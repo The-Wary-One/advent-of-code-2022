@@ -13,7 +13,7 @@ impl<'a, 'b> CLIParser<'a, 'b> {
 
     fn parse(&mut self) -> Rc<RefCell<Filesystem>> {
         use Filesystem::*;
-        let fs = Command::parse_commands(&mut self.input).iter().fold(
+        let fs = Command::parse_commands(self.input).iter().fold(
             Rc::new(RefCell::new(Directory {
                 name: Filesystem::ROOT_NAME,
                 children: Vec::new(),
@@ -219,8 +219,7 @@ impl<'a> Filesystem<'a> {
         match self {
             Directory { children, .. } => children
                 .iter()
-                .find(|child| child.as_ref().borrow().name() == p)
-                .is_some(),
+                .any(|child| child.as_ref().borrow().name() == p),
             File { .. } => false,
         }
     }
@@ -293,14 +292,11 @@ impl<'a> Display for Filesystem<'a> {
             File { name, size, .. } => write!(f, "- {name} (file, size={size})"),
             Directory { name, children, .. } => write!(f, "- {name} (dir)").and_then(|_| {
                 DISPLAY_COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                let c = children
-                    .iter()
-                    .map(|child| {
-                        let alignment = " "
-                            .repeat(DISPLAY_COUNTER.load(std::sync::atomic::Ordering::Relaxed) * 4);
-                        write!(f, "\n{alignment}{}", child.borrow())
-                    })
-                    .collect::<Result<(), _>>();
+                let c = children.iter().try_for_each(|child| {
+                    let alignment =
+                        " ".repeat(DISPLAY_COUNTER.load(std::sync::atomic::Ordering::Relaxed) * 4);
+                    write!(f, "\n{alignment}{}", child.borrow())
+                });
                 DISPLAY_COUNTER.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
                 c
             }),
@@ -308,24 +304,22 @@ impl<'a> Display for Filesystem<'a> {
     }
 }
 
-pub fn solve_part1(mut input: &mut Lines) -> usize {
-    let mut parser = CLIParser::new(&mut input);
+pub fn solve_part1(input: &mut Lines) -> usize {
+    let mut parser = CLIParser::new(input);
     let fs = parser.parse();
     //println!("{}", fs.borrow());
     DepthFirstIteratorFS::from(fs)
-        .into_iter()
         .filter(|node| node.borrow().is_dir())
         .map(|n| n.borrow().size())
         .filter(|size| *size <= 100_000)
         .sum()
 }
 
-pub fn solve_part2(mut input: &mut Lines) -> usize {
-    let mut parser = CLIParser::new(&mut input);
+pub fn solve_part2(input: &mut Lines) -> usize {
+    let mut parser = CLIParser::new(input);
     let fs = parser.parse();
     let space_to_free = 30000000 - (70000000 - fs.borrow().size());
     DepthFirstIteratorFS::from(fs)
-        .into_iter()
         .filter(|node| node.borrow().is_dir())
         .map(|n| n.borrow().size())
         .filter(|size| *size >= space_to_free)
@@ -337,7 +331,7 @@ pub fn solve_part2(mut input: &mut Lines) -> usize {
 mod tests {
     use super::*;
 
-    const INPUT: &'static str = "$ cd /
+    const INPUT: &str = "$ cd /
 $ ls
 dir a
 14848514 b.txt

@@ -28,11 +28,11 @@ fn find_marker_pos(datastream: &str, marker_len: usize) -> usize {
 }
 
 pub fn solve_part1(datastream: &str) -> usize {
-    find_marker_pos(&datastream, 4)
+    find_marker_pos(datastream, 4)
 }
 
 pub fn solve_part2(datastream: &str) -> usize {
-    find_marker_pos(&datastream, 14)
+    find_marker_pos(datastream, 14)
 }
 
 #[cfg(test)]

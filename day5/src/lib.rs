@@ -56,7 +56,7 @@ impl<'a, 'b: 'a> ProcedureParser<'a, 'b> {
         Self { input }
     }
 
-    fn parse(&mut self, moving_fn: impl FnMut((usize, usize, usize)) -> ()) {
+    fn parse(&mut self, moving_fn: impl FnMut((usize, usize, usize))) {
         self.input
             .map(|line| {
                 line.split_ascii_whitespace()
@@ -122,7 +122,7 @@ pub fn solve_part2(mut input: Lines) -> String {
 mod tests {
     use super::*;
 
-    const INPUT: &'static str = "    [D]
+    const INPUT: &str = "    [D]
 [N] [C]
 [Z] [M] [P]
  1   2   3

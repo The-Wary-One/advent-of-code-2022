@@ -5,7 +5,7 @@ use std::{
 
 use itertools::Itertools;
 
-#[derive(PartialEq, Eq, PartialOrd)]
+#[derive(PartialEq, Eq)]
 enum Choice {
     Rock = 1,
     Paper,
@@ -32,7 +32,7 @@ impl FromStr for Choice {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.chars()
             .next()
-            .ok_or_else(|| "Empty string")
+            .ok_or("Empty string")
             .and_then(|c| c.try_into())
     }
 }
@@ -48,6 +48,12 @@ impl Ord for Choice {
             // eq
             (Rock, Rock) | (Paper, Paper) | (Scissors, Scissors) => Ordering::Equal,
         }
+    }
+}
+
+impl PartialOrd for Choice {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -113,7 +119,7 @@ impl FromStr for RoundResult {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.chars()
             .next()
-            .ok_or_else(|| "Empty string")
+            .ok_or("Empty string")
             .and_then(|c| c.try_into())
     }
 }
@@ -144,7 +150,7 @@ pub fn solve_part2(input: Lines) -> usize {
 mod tests {
     use super::*;
 
-    const INPUT: &'static str = "A Y
+    const INPUT: &str = "A Y
 B X
 C Z";
 

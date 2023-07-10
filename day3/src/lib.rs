@@ -67,7 +67,7 @@ pub fn solve_part2(input: Lines) -> usize {
         .map(|(items1, items2, items3)| {
             *items1
                 .intersection(&items2)
-                .map(|c| *c)
+                .copied()
                 .collect::<HashSet<_>>()
                 .intersection(&items3)
                 .next()
@@ -83,7 +83,7 @@ pub fn solve_part2(input: Lines) -> usize {
 mod tests {
     use super::*;
 
-    const INPUT: &'static str = "vJrwpWtwJgWrhcsFMMfFFhFp
+    const INPUT: &str = "vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
