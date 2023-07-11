@@ -36,10 +36,10 @@ where
     }
 }
 
-pub fn solve_part1(mut input: Lines) -> usize {
+fn get_forest_and_visible_trees(mut input: Lines) -> (Forest, HashSet<Tree>) {
     let parser = ForestParser::new(&mut input);
     let forest = parser.parse();
-    let visible_tree_set = forest
+    let visible_trees = forest
         // Iterate over all rows and columns.
         .iter_rows_then_columns()
         .fold(HashSet::<Tree>::new(), |mut set, line| {
@@ -59,7 +59,21 @@ pub fn solve_part1(mut input: Lines) -> usize {
             });
             set
         });
+    (forest, visible_trees)
+}
+
+pub fn solve_part1(input: Lines) -> usize {
+    let (_, visible_tree_set) = get_forest_and_visible_trees(input);
     visible_tree_set.len()
+}
+
+pub fn solve_part2(input: Lines) -> usize {
+    let (forest, visible_tree_set) = get_forest_and_visible_trees(input);
+    visible_tree_set
+        .iter()
+        .map(|tree| forest.tree_scenic_score(tree))
+        .max()
+        .expect("safe")
 }
 
 #[cfg(test)]
@@ -75,5 +89,10 @@ mod tests {
     #[test]
     fn test_part1() {
         assert_eq!(solve_part1(INPUT.lines()), 21);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(solve_part2(INPUT.lines()), 8);
     }
 }
