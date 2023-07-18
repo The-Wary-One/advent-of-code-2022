@@ -2,6 +2,9 @@ use std::str::Lines;
 
 use itertools::Itertools;
 
+pub mod complex;
+pub use complex::*;
+
 #[derive(Clone, Copy, Debug)]
 enum Direction {
     Left,
@@ -55,7 +58,7 @@ pub fn solve_part1(lines: Lines) -> usize {
                 "R" => Right,
                 "U" => Up,
                 "D" => Down,
-                _ => panic!("impossible"),
+                _ => unreachable!(),
             };
             std::iter::repeat(direction).take(steps)
         })
@@ -75,6 +78,8 @@ pub fn solve_part1(lines: Lines) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use std::io::BufReader;
+
     use super::*;
 
     const INPUT: &str = "R 4
@@ -87,7 +92,17 @@ L 5
 R 2";
 
     #[test]
-    fn test_part1() {
+    fn test_part1_simple() {
         assert_eq!(solve_part1(INPUT.lines()), 13);
+    }
+
+    #[test]
+    fn test_part1_complex() {
+        #[cfg(feature = "dhat-heap")]
+        let _profiler = dhat::Profiler::new_heap();
+        env_logger::init();
+
+        let reader = BufReader::new(INPUT.as_bytes());
+        assert_eq!(solve_part1_complex(reader), 13);
     }
 }
