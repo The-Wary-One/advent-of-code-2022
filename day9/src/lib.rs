@@ -13,10 +13,10 @@ enum Direction {
     Down,
 }
 
-#[derive(PartialEq, Eq, Hash, Copy, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 struct Position {
-    x: isize,
-    y: isize,
+    x: i16,
+    y: i16,
 }
 
 impl Position {

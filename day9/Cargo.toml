@@ -10,7 +10,7 @@ log = "0.4"
 env_logger = "0.9"
 
 itertools = "0.11"
-nom = { version = "7.1", features = ["alloc"] }
+nom = { version = "7.1", features = [] }
 smallvec = "1.11"
 dhat = "0.3"
 
