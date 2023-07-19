@@ -112,7 +112,7 @@ pub fn solve_part1_complex(input: impl BufRead) -> usize {
     let (_, tail_positions) = iter.fold(
         (
             (Position { x: 0, y: 0 }, Position { x: 0, y: 0 }),
-            HashSet::from([Position { x: 0, y: 0 }]),
+            HashSet::with_capacity(5900),
         ),
         |((last_head_pos, last_tail_pos), mut tail_positions), direction| {
             let new_head_pos = last_head_pos.move_to(direction);
