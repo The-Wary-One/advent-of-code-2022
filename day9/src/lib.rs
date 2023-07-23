@@ -1,4 +1,7 @@
-use std::str::Lines;
+use std::{
+    ops::{Add, AddAssign, Sub},
+    str::Lines,
+};
 
 use itertools::Itertools;
 
@@ -13,7 +16,7 @@ pub enum Direction {
     Down,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone, Default)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone, Default, Debug)]
 pub struct Position {
     x: i16,
     y: i16,
@@ -64,6 +67,72 @@ impl Position {
                 x: self.x,
                 y: self.y - 1,
             },
+        }
+    }
+
+    pub fn move_delta(self, delta: Position) -> Self {
+        let (dx, dy) = match (delta.x, delta.y) {
+            // overlapping
+            (0, 0) => (0, 0),
+            // touching up/left/down/right
+            (0, 1) | (1, 0) | (0, -1) | (-1, 0) => (0, 0),
+            // touching diagonally
+            (1, 1) | (1, -1) | (-1, 1) | (-1, -1) => (0, 0),
+            // need to move up/left/down/right
+            (0, 2) => (0, 1),
+            (0, -2) => (0, -1),
+            (2, 0) => (1, 0),
+            (-2, 0) => (-1, 0),
+            // need to move to the right diagonally
+            (2, 1) => (1, 1),
+            (2, -1) => (1, -1),
+            // need to move to the left diagonally
+            (-2, 1) => (-1, 1),
+            (-2, -1) => (-1, -1),
+            // need to move up/down diagonally
+            (1, 2) => (1, 1),
+            (-1, 2) => (-1, 1),
+            (1, -2) => (1, -1),
+            (-1, -2) => (-1, -1),
+            // 🆕 need to move diagonally
+            (-2, -2) => (-1, -1),
+            (-2, 2) => (-1, 1),
+            (2, -2) => (1, -1),
+            (2, 2) => (1, 1),
+            _ => panic!("unhandled case: {delta:?}"),
+        };
+        Self {
+            x: self.x + dx,
+            y: self.y + dy,
+        }
+    }
+}
+
+impl Add for Position {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl AddAssign for Position {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Sub for Position {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
         }
     }
 }

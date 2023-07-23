@@ -16,7 +16,8 @@ fn main() {
     eframe::run_native(
         "AoC 2022 - Day9 part1",
         options,
-        Box::new(|_cc| Box::new(MyApp::<2>::init())),
+        //Box::new(|_cc| Box::new(MyApp::<2>::init())),
+        Box::new(|_cc| Box::new(MyApp::<10>::init())),
     )
     .unwrap();
 }
@@ -41,6 +42,7 @@ impl<const N: usize> MyApp<N> {
 
     #[inline(always)]
     fn init_from(input: impl BufRead + 'static) -> Self {
+        assert!(N > 1, "invalid N");
         let directions = get_directions(input);
 
         Self {
@@ -58,23 +60,20 @@ impl<const N: usize> MyApp<N> {
         // Update head.
         self.last_direction = self.directions.next();
         let direction = self.last_direction?;
+        self.knots[0] = self.knots[0].move_to(direction);
         let mut previous_knot_position = self.knots[0];
-        self.knots[0] = previous_knot_position.move_to(direction);
         // Update in between knots.
         for i in 1..N - 1 {
             let knot_pos = self.knots[i];
-            if !knot_pos.is_adjacent(self.knots[i - 1]) {
-                self.knots[i] = previous_knot_position;
-            }
-            previous_knot_position = knot_pos;
+            let diff = previous_knot_position - knot_pos;
+            self.knots[i] = knot_pos.move_delta(diff);
+            previous_knot_position = self.knots[i];
         }
         // Update tail.
-        let new_prev_knot_pos = self.knots[N - 2];
-        let tail_pos = self.knots.get_mut(N - 1).expect("safe");
-        if !tail_pos.is_adjacent(new_prev_knot_pos) {
-            *tail_pos = previous_knot_position;
-            self.tail_positions.insert(previous_knot_position);
-        }
+        let tail_pos = self.knots[N - 1];
+        let diff = previous_knot_position - tail_pos;
+        self.knots[N - 1] = tail_pos.move_delta(diff);
+        self.tail_positions.insert(self.knots[N - 1]);
         Some(())
     }
 }
@@ -113,7 +112,7 @@ impl<const N: usize> eframe::App for MyApp<N> {
             for _ in 0..self.speed {
                 self.step();
             }
-            ctx.request_repaint_after(Duration::from_millis(40));
+            ctx.request_repaint_after(Duration::from_millis(25));
         }
 
         if self.show_sidebar {
@@ -170,16 +169,15 @@ impl<const N: usize> eframe::App for MyApp<N> {
             let head_pos = to_panel_pos(self.knots[0]);
             painter.circle_stroke(head_pos, 2.0, Stroke::new(2.0, Color32::GREEN));
 
+            for w in self.knots[0..N - 1].windows(2) {
+                // paint the in between knot
+                let knot_pos = to_panel_pos(w[1]);
+                painter.circle_stroke(knot_pos, 2.0, Stroke::new(2.0, Color32::LIGHT_GRAY));
+            }
+
             // paint the tail
             let tail_pos = to_panel_pos(self.knots[1]);
-            painter.circle_stroke(tail_pos, 2.0, Stroke::new(2.0, Color32::YELLOW));
-
-            // paint an arrow from head to tail
-            painter.arrow(
-                tail_pos,
-                head_pos - tail_pos,
-                Stroke::new(1.0, Color32::YELLOW),
-            )
+            painter.circle_stroke(tail_pos, 2.0, Stroke::new(2.0, Color32::YELLOW))
         });
     }
 }
@@ -202,5 +200,26 @@ R 2";
         let mut app = MyApp::<2>::init_from(reader);
         while app.step().is_some() {}
         assert_eq!(app.tail_positions.len(), 13);
+    }
+
+    #[test]
+    fn test_part2() {
+        let reader = BufReader::new(INPUT.as_bytes());
+        let mut app = MyApp::<10>::init_from(reader);
+        while app.step().is_some() {}
+        assert_eq!(app.tail_positions.len(), 1);
+
+        let input = "R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20";
+        let reader = BufReader::new(input.as_bytes());
+        let mut app = MyApp::<10>::init_from(reader);
+        while app.step().is_some() {}
+        assert_eq!(app.tail_positions.len(), 36);
     }
 }
