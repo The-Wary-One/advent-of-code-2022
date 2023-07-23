@@ -6,25 +6,46 @@ pub mod complex;
 pub use complex::*;
 
 #[derive(Clone, Copy, Debug)]
-enum Direction {
+pub enum Direction {
     Left,
     Right,
     Up,
     Down,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
-struct Position {
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone, Default)]
+pub struct Position {
     x: i16,
     y: i16,
 }
 
 impl Position {
-    fn is_adjacent(&self, other: Self) -> bool {
+    #[inline(always)]
+    pub fn new(x: i16, y: i16) -> Self {
+        Self { x, y }
+    }
+
+    #[inline(always)]
+    pub fn x(&self) -> i16 {
+        self.x
+    }
+
+    #[inline(always)]
+    pub fn y(&self) -> i16 {
+        self.y
+    }
+
+    #[inline(always)]
+    pub fn is_zero(&self) -> bool {
+        self.x == 0 && self.y == 0
+    }
+    #[inline(always)]
+    pub fn is_adjacent(&self, other: Self) -> bool {
         self.x.abs_diff(other.x) < 2 && self.y.abs_diff(other.y) < 2
     }
 
-    fn move_to(self, direction: Direction) -> Self {
+    #[inline(always)]
+    pub fn move_to(self, direction: Direction) -> Self {
         use Direction::*;
         match direction {
             Left => Position {

@@ -1,5 +1,4 @@
-use std::fs;
-use std::io::BufReader;
+use std::{fs, io::BufReader};
 
 fn main() {
     #[cfg(feature = "dhat-heap")]

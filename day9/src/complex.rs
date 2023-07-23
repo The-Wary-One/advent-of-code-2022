@@ -34,7 +34,7 @@ fn parse_command(input: &str) -> IResult<&str, (Direction, u8), VerboseError<&st
 }
 
 #[derive(Clone)]
-struct DirectionReaderIterator<B: BufRead, const N: usize>
+pub struct DirectionReaderIterator<B: BufRead, const N: usize>
 where
     [Direction; N]: Array<Item = Direction>,
 {
@@ -49,7 +49,7 @@ where
     [Direction; N]: Array<Item = Direction>,
 {
     #[inline(always)]
-    fn new(reader: B) -> Self {
+    pub fn new(reader: B) -> Self {
         Self {
             inner: reader,
             buffer: String::new(),
@@ -107,8 +107,12 @@ where
 }
 
 #[inline(always)]
+pub fn get_directions(input: impl BufRead) -> impl Iterator<Item = Direction> {
+    DirectionReaderIterator::<_, 20>::new(input)
+}
+
 pub fn solve_part1_complex(input: impl BufRead) -> usize {
-    let iter = DirectionReaderIterator::<_, 20>::new(input);
+    let iter = get_directions(input);
     let (_, tail_positions) = iter.fold(
         (
             (Position { x: 0, y: 0 }, Position { x: 0, y: 0 }),
