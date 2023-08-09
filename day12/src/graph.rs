@@ -21,7 +21,11 @@ impl AdjacencyList {
         Self { edges }
     }
 
-    pub fn dijkstra_with_priority_queue(&self, start: usize, end: usize) -> Option<Box<[usize]>> {
+    pub fn dijkstra_with_priority_queue(
+        &self,
+        start: usize,
+        end_predicate: impl Fn(usize) -> bool,
+    ) -> Option<Box<[usize]>> {
         let mut pq = MinHeap::new();
         let mut path_and_cost = vec![None; self.edges.len()].into_boxed_slice();
 
@@ -34,6 +38,7 @@ impl AdjacencyList {
             });
         }
 
+        let mut end = None;
         while let Some(item) = pq.pop() {
             let parent = item.from;
             let cur = item.to;
@@ -47,7 +52,8 @@ impl AdjacencyList {
 
             *cur_pc = Some((parent, cur_cost));
             // End reached.
-            if cur == end {
+            if end_predicate(cur) {
+                end = Some(cur);
                 break;
             }
 
@@ -60,8 +66,11 @@ impl AdjacencyList {
             }
         }
 
-        let (mut origin, _) = &path_and_cost[end]?;
-        let mut v = vec![end];
+        let mut v = Vec::new();
+        let (mut origin, _) = end.and_then(|end| {
+            v.push(end);
+            path_and_cost[end]
+        })?;
         loop {
             (origin, _) = path_and_cost[origin].expect("safe");
             v.push(origin);

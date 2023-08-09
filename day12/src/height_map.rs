@@ -92,9 +92,17 @@ pub struct HeightMap {
 }
 
 impl HeightMap {
-    pub fn find_shortest_path(&self) -> usize {
-        let adj_list = self.build_adjacency_list();
-        let shortest_path = adj_list.dijkstra_with_priority_queue(self.start, self.end);
+    pub fn find_shortest_path_part1(&self) -> usize {
+        let adj_list = self.build_adjacency_list_part1();
+        let shortest_path =
+            adj_list.dijkstra_with_priority_queue(self.start, |idx| idx == self.end);
+        shortest_path.expect("safe").len()
+    }
+
+    pub fn find_shortest_path_part2(&self) -> usize {
+        let adj_list = self.build_adjacency_list_part2();
+        let shortest_path =
+            adj_list.dijkstra_with_priority_queue(self.end, |idx| self.inner[idx].elevation() == 0);
         shortest_path.expect("safe").len()
     }
 
@@ -128,7 +136,7 @@ impl HeightMap {
         [up, right, down, left]
     }
 
-    fn build_adjacency_list(&self) -> AdjacencyList {
+    fn build_adjacency_list_part1(&self) -> AdjacencyList {
         let edges = self
             .inner
             .iter()
@@ -141,6 +149,33 @@ impl HeightMap {
                     .filter(|to| el.is_reachable(&self.inner[*to]))
                     .map(|to| {
                         let weight = match el.cmp(&self.inner[to]) {
+                            Ordering::Greater => 3,
+                            Ordering::Equal => 2,
+                            Ordering::Less => 1,
+                        };
+                        Edge::new(to, weight)
+                    })
+                    .collect::<Vec<_>>()
+                    .into_boxed_slice()
+            })
+            .collect::<Vec<_>>()
+            .into_boxed_slice();
+        AdjacencyList::new(edges)
+    }
+
+    fn build_adjacency_list_part2(&self) -> AdjacencyList {
+        let edges = self
+            .inner
+            .iter()
+            .enumerate()
+            .map(|(idx, el)| {
+                let pos = Self::position_from_raw(self.width, idx);
+                self.adjacent_no_diag(&pos)
+                    .into_iter()
+                    .filter_map(|o| o.map(|p| Self::position_to_raw(self.width, p)))
+                    .filter(|to| self.inner[*to].is_reachable(el))
+                    .map(|to| {
+                        let weight = match self.inner[to].cmp(el) {
                             Ordering::Greater => 3,
                             Ordering::Equal => 2,
                             Ordering::Less => 1,
