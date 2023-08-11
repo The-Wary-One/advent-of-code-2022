@@ -15,8 +15,8 @@ pub fn quick_sort<T: Ord>(s: &mut [T]) {
 
     s.swap(pivot_idx, lo);
 
-    quick_sort(&mut s[..pivot_idx]);
-    quick_sort(&mut s[pivot_idx + 1..]);
+    quick_sort(&mut s[..lo]);
+    quick_sort(&mut s[lo + 1..]);
 }
 
 #[cfg(test)]
