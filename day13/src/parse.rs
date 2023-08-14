@@ -96,8 +96,8 @@ impl Packets {
         quick_sort::quick_sort(&mut self.0);
         let signal2 = List(vec![List(vec![Uint(2).into()].into()).into()].into());
         let signal6 = List(vec![List(vec![Uint(6).into()].into()).into()].into());
-        let s2 = self.0.iter().position(|e| e == &signal2).unwrap() + 1;
-        let s6 = self.0.iter().position(|e| e == &signal6).unwrap() + 1;
+        let s2 = self.0.binary_search(&signal2).unwrap() + 1;
+        let s6 = self.0.binary_search(&signal6).unwrap() + 1;
 
         s2 * s6
     }
@@ -118,15 +118,15 @@ impl Expr {
 impl Ord for Expr {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match (self, other) {
-            (Expr::Uint(l), Expr::Uint(r)) => l.cmp(&r),
-            (Expr::List(l), Expr::List(r)) => l.cmp(&r),
+            (Expr::Uint(l), Expr::Uint(r)) => l.cmp(r),
+            (Expr::List(l), Expr::List(r)) => l.cmp(r),
             (Expr::List(l), Expr::Uint(r)) => {
-                let r = List(vec![Expr::Uint(r.clone())].into_boxed_slice());
+                let r = List(vec![Expr::Uint(*r)].into_boxed_slice());
                 l.cmp(&r)
             }
             (Expr::Uint(l), Expr::List(r)) => {
-                let l = List(vec![Expr::Uint(l.clone())].into_boxed_slice());
-                l.cmp(&r)
+                let l = List(vec![Expr::Uint(*l)].into_boxed_slice());
+                l.cmp(r)
             }
         }
     }
